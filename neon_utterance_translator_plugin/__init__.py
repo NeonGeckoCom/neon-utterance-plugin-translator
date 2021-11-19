@@ -36,29 +36,26 @@ class UtteranceTranslator(UtteranceTransformer):
         self.lang_detector = OVOSLangDetectionFactory.create()
         self.translator = OVOSLangTranslationFactory.create()
 
-    def transform(self, utterances, lang="en-us"):
+    def transform(self, utterances, context):
         metadata = []
+        internal_lang = self.language_config["internal"]
         for idx, ut in enumerate(utterances):
             try:
                 original = ut
                 detected_lang = self.lang_detector.detect(original)
                 LOG.debug(f"Detected language: {detected_lang}")
-                if detected_lang != self.language_config["internal"].split("-")[0]:
-                    utterances[idx] = self.translator.translate(original,
-                                                                self.language_config["internal"])
+                if detected_lang != internal_lang.split("-")[0]:
+                    utterances[idx] = self.translator.translate(original, internal_lang)
                 # add language metadata to context
                 metadata += [{
-                    "source_lang": lang,
+                    "source_lang": context["lang"],
                     "detected_lang": detected_lang,
-                    "internal": self.language_config["internal"],
-                    "was_translated": detected_lang != self.language_config["internal"].split("-")[0],
+                    "internal": internal_lang,
+                    "was_translated": detected_lang != internal_lang.split("-")[0],
                     "raw_utterance": original
                 }]
             except Exception as e:
                 LOG.error(e)
         # return translated utterances + data
-        return utterances, {"translation_data": metadata}
+        return utterances, {"translation_data": metadata, "lang": internal_lang}
 
-
-def create_module():
-    return UtteranceTranslator()
