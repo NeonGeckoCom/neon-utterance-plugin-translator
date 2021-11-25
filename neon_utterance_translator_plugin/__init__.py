@@ -27,16 +27,19 @@ from ovos_plugin_manager.language import OVOSLangDetectionFactory, OVOSLangTrans
 from ovos_utils.log import LOG
 
 from neon_transformers import UtteranceTransformer
+from neon_transformers.tasks import UtteranceTask
 
 
 class UtteranceTranslator(UtteranceTransformer):
+    task = UtteranceTask.TRANSLATION
+
     def __init__(self, name="utterance_translator", priority=5):
         super().__init__(name, priority)
         self.language_config = self.config.get("language") or {}
         self.lang_detector = OVOSLangDetectionFactory.create()
         self.translator = OVOSLangTranslationFactory.create()
 
-    def transform(self, utterances, context):
+    def transform(self, utterances, context=None):
         metadata = []
         internal_lang = self.language_config["internal"]
         for idx, ut in enumerate(utterances):
