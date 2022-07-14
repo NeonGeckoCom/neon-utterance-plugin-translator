@@ -36,13 +36,15 @@ class UtteranceTranslator(UtteranceTransformer):
     def __init__(self, name="utterance_translator", priority=5):
         super().__init__(name, priority)
         self.language_config = get_neon_lang_config()
-        self.supported_langs = self.config['language'].get('intents') or [
-            self.config['language'].get("internal") or "en-us"]
+        self.supported_langs = self.language_config['language'].get('intents') or [
+            self.language_config['language'].get("internal") or "en-us"]
         self.lang_detector = OVOSLangDetectionFactory.create()
         self.translator = OVOSLangTranslationFactory.create()
 
-    def transform(self, utterances, context=None, lang=None):
+    def transform(self, utterances, context=None):
         metadata = []
+        lang = context.get('lang') or 'en-us'
+
         for idx, ut in enumerate(utterances):
             try:
                 original = ut
