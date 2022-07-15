@@ -59,7 +59,7 @@ jobs:
           path: tests/lang-translate-test-results.xml
       - name: Test Language Transform
         run: |
-          pytest tests/lang_transform_tests.py --doctest-modules --junitxml=tests/lang-transform-test-results.xml
+          pytest tests/lang_transform_test.py --doctest-modules --junitxml=tests/lang-transform-test-results.xml
       - name: Upload language transformation test results
         uses: actions/upload-artifact@v2
         with:
