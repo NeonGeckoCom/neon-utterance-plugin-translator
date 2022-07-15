@@ -35,15 +35,15 @@ from neon_utterance_translator_plugin import UtteranceTranslator
 class LangDetectTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.translator = UtteranceTranslator()
+        cls.detector = UtteranceTranslator()
 
     def test_detector_valid_en(self):
-        detected_lang = self.translator.lang_detector.detect("hello there")
+        detected_lang = self.detector.lang_detector.detect("hello there")
         self.assertEqual(detected_lang, "en")
 
     def test_detector_probs(self):
-        scores = self.translator.lang_detector.detect_probs('hello')
-        self.assertIsInstance(scores, dict)
+        scores = self.detector.lang_detector.detect_probs('hello')
+        self.assertIsInstance(scores, list)
 
 
 if __name__ == '__main__':

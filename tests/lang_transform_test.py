@@ -39,43 +39,53 @@ class LangTransformTests(unittest.TestCase):
         cls.transformer = UtteranceTranslator()
 
     def test_existing_lang_handling_en(self):
-        message = Message('test', {'utterance': ['message', 'to translate']},
-                    {'context': {'lang': 'en-us'}})
+        message = Message('test', {'utterance': ['message', 'to translate'],
+                                   'context': {'lang': 'en-us', 'supported_langs': ['en', 'pl', 'uk', 'fi', 'nl']}})
 
-        utterances = message.data.get('utterances')
+        utterances = message.data.get('utterance')
         context = message.data.get('context')
 
         utterances, data = self.transformer.transform(utterances, context=context)
-        result = data["raw_utterance"]
+        result_list = []
 
-        self.assertEqual(data["was_translated"], False)
-        self.assertEqual(utterances, result)
+        for res in data['translation_data']:
+            result = res["raw_utterance"]
+            result_list.append(result)
+            self.assertEqual(res["was_translated"], False)
+        self.assertEqual(utterances, result_list)
 
     def test_existing_lang_handling_pl(self):
-        message = Message('test', {'utterance': ['wiadomość', 'przetłumaczyć']},
-                          {'context': {'lang': 'pl-pl'}})
+        message = Message('test', {'utterance': ['wiadomość', 'przetłumaczyć'],
+                                   'context': {'lang': 'pl-pl', 'supported_langs': ['en', 'pl', 'uk', 'fi', 'nl']}})
 
-        utterances = message.data.get('utterances')
+        utterances = message.data.get('utterance')
         context = message.data.get('context')
 
         utterances, data = self.transformer.transform(utterances, context=context)
-        result = data["raw_utterance"]
+        result_list = []
 
-        self.assertEqual(utterances, result)
+        for res in data['translation_data']:
+            result = res["raw_utterance"]
+            result_list.append(result)
+            self.assertEqual(res["was_translated"], False)
+        self.assertEqual(utterances, result_list)
 
     def test_non_existing_lang_handling_cz(self):
-        message = Message('test', {'utterance': ['zpráva', 'přeložit']},
-                          {'context': {'lang': 'cz'}})
+        message = Message('test', {'utterance': ['Это русский'],
+                                   'context': {'lang': 'ru-ru', 'supported_langs': ['en', 'pl', 'uk', 'fi', 'nl']}})
 
-        utterances = message.data.get('utterances')
+        utterances = message.data.get('utterance')
         context = message.data.get('context')
 
         utterances, data = self.transformer.transform(utterances, context=context)
-        result = data["raw_utterance"]
+        expected_translation = ["It's Russian"]
+        result_list = []
 
-        expected_translation = ['message', 'translate']
-
-        self.assertEqual(expected_translation, result)
+        for res in data['translation_data']:
+            result = res["translated_utterance"]
+            result_list.append(result)
+            self.assertEqual(res["was_translated"], True)
+        self.assertEqual(expected_translation, result_list)
 
 
 if __name__ == '__main__':

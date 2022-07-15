@@ -28,23 +28,22 @@ from ovos_utils.log import LOG
 
 from neon_transformers import UtteranceTransformer
 from neon_transformers.tasks import UtteranceTask
-from neon_utils.configuration_utils import get_neon_lang_config
+
 
 class UtteranceTranslator(UtteranceTransformer):
     task = UtteranceTask.TRANSLATION
 
     def __init__(self, name="utterance_translator", priority=5):
         super().__init__(name, priority)
-        self.language_config = get_neon_lang_config()
-        self.supported_langs = self.language_config['language'].get('intents') or [
-            self.language_config['language'].get("internal") or "en-us"]
         self.lang_detector = OVOSLangDetectionFactory.create()
         self.translator = OVOSLangTranslationFactory.create()
 
     def transform(self, utterances, context=None):
         metadata = []
         lang = context.get('lang') or 'en-us'
-
+        internal_lang = context.get('internal') or 'en-us'
+        supported_langs = context.get('supported_langs') or ['en']
+        was_translated = False
         for idx, ut in enumerate(utterances):
             try:
                 original = ut
@@ -53,19 +52,24 @@ class UtteranceTranslator(UtteranceTransformer):
                     LOG.warning(f"Specified lang: {lang} but detected {detected_lang}")
                 else:
                     LOG.debug(f"Detected language: {detected_lang}")
-                if detected_lang not in self.supported_langs:
+                if detected_lang not in supported_langs:
+                    LOG.warning(f"There is no: {lang} in supported languages. "
+                                f"Utterance will be translated to English")
                     utterances[idx] = self.translator.translate(
                         original,
-                        self.language_config["internal"],
+                        internal_lang,
                         detected_lang)
+                    was_translated = True
                     LOG.info(f"Translated utterance to: {utterances[idx]}")
                 # add language metadata to context
                 metadata += [{
                     "source_lang": lang,
                     "detected_lang": detected_lang,
-                    "internal": self.language_config["internal"],
-                    "was_translated": lang.split('-', 1)[0] != detected_lang,
-                    "raw_utterance": original
+                    "internal": internal_lang,
+                    "was_translated": was_translated,
+                    "raw_utterance": original,
+                    "translated_utterance": utterances[idx]
+
                 }]
             except Exception as e:
                 LOG.error(e)
