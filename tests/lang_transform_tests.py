@@ -49,9 +49,8 @@ class LangTransformTests(unittest.TestCase):
                                    'context': {'lang': 'en-us'}})
 
         utterances = message.data.get('utterance')
-        context = message.data.get('context')
 
-        utterances, data = self.transformer.transform(utterances, context=context)
+        utterances, data = self.transformer.transform(utterances)
         result_list = []
 
         print(utterances)

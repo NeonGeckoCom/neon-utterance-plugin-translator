@@ -43,20 +43,23 @@ class UtteranceTranslator(UtteranceTransformer):
 
     def transform(self, utterances, context=None):
         metadata = []
-        lang = context.get('lang') or self.internal_lang
-        print('lang from context', lang)
         was_translated = False
         for idx, ut in enumerate(utterances):
             try:
                 original = ut
                 detected_lang = self.lang_detector.detect(original)
-                if detected_lang != lang.split('-', 1)[0]:
-                    LOG.warning(f"Specified lang: {lang} but detected {detected_lang}")
+                if context != None and context.get('lang') != '':
+                    lang = context.get('lang')
+                    if detected_lang != lang.split('-', 1)[0]:
+                        LOG.warning(f"Specified lang: {lang} but detected {detected_lang}")
+                    else:
+                        LOG.debug(f"Detected language: {detected_lang}")
                 else:
-                    LOG.debug(f"Detected language: {detected_lang}")
+                    LOG.warning(f"No lang provided but detected {detected_lang}")
+                    lang = detected_lang
                 if lang.split('-', 1)[0] not in self.supported_langs:
                     LOG.warning(f"There is no: {lang} in supported languages. "
-                                f"Utterance will be translated to English")
+                                f"Utterance will be translated to {self.internal_lang}")
                     utterances[idx] = self.translator.translate(
                         original,
                         self.internal_lang,
