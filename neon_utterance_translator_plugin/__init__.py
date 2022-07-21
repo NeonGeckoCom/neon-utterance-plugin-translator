@@ -33,16 +33,18 @@ from neon_transformers.tasks import UtteranceTask
 class UtteranceTranslator(UtteranceTransformer):
     task = UtteranceTask.TRANSLATION
 
-    def __init__(self, name="utterance_translator", priority=5):
-        super().__init__(name, priority)
+    def __init__(self, name="utterance_translator", config=None, priority=5):
+        super().__init__(name, priority, config)
+        self.language_config = self.config.get("language") or {}
+        self.supported_langs = self.language_config.get('supported_langs') or ['en']
+        self.internal_lang = self.language_config.get("internal") or 'en-us' or self.supported_langs[0]
         self.lang_detector = OVOSLangDetectionFactory.create()
         self.translator = OVOSLangTranslationFactory.create()
 
     def transform(self, utterances, context=None):
         metadata = []
-        lang = context.get('lang') or 'en-us'
-        internal_lang = context.get('internal') or 'en-us'
-        supported_langs = context.get('supported_langs') or ['en']
+        lang = context.get('lang') or self.internal_lang
+        print('lang from context', lang)
         was_translated = False
         for idx, ut in enumerate(utterances):
             try:
@@ -52,20 +54,20 @@ class UtteranceTranslator(UtteranceTransformer):
                     LOG.warning(f"Specified lang: {lang} but detected {detected_lang}")
                 else:
                     LOG.debug(f"Detected language: {detected_lang}")
-                if detected_lang not in supported_langs:
+                if lang.split('-', 1)[0] not in self.supported_langs:
                     LOG.warning(f"There is no: {lang} in supported languages. "
                                 f"Utterance will be translated to English")
                     utterances[idx] = self.translator.translate(
                         original,
-                        internal_lang,
-                        detected_lang)
+                        self.internal_lang,
+                        lang)
                     was_translated = True
                     LOG.info(f"Translated utterance to: {utterances[idx]}")
                 # add language metadata to context
                 metadata += [{
                     "source_lang": lang,
                     "detected_lang": detected_lang,
-                    "internal": internal_lang,
+                    "internal": self.internal_lang,
                     "was_translated": was_translated,
                     "raw_utterance": original,
                     "translated_utterance": utterances[idx]

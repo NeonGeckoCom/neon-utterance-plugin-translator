@@ -34,19 +34,28 @@ from mycroft_bus_client import Message
 
 
 class LangTransformTests(unittest.TestCase):
+
     @classmethod
     def setUpClass(cls) -> None:
-        cls.transformer = UtteranceTranslator()
+        cls.transformer = UtteranceTranslator(config={
+            'language': {"internal_lang": "en-us", "supported_langs": ['en', 'pl', 'uk', 'fi', 'nl']}
+            }
+        )
+
+
 
     def test_existing_lang_handling_en(self):
         message = Message('test', {'utterance': ['message', 'to translate'],
-                                   'context': {'lang': 'en-us', 'supported_langs': ['en', 'pl', 'uk', 'fi', 'nl']}})
+                                   'context': {'lang': 'en-us'}})
 
         utterances = message.data.get('utterance')
         context = message.data.get('context')
 
         utterances, data = self.transformer.transform(utterances, context=context)
         result_list = []
+
+        print(utterances)
+        # message.context = merge_dict(message.context, data)
 
         for res in data['translation_data']:
             result = res["raw_utterance"]
@@ -56,7 +65,7 @@ class LangTransformTests(unittest.TestCase):
 
     def test_existing_lang_handling_pl(self):
         message = Message('test', {'utterance': ['wiadomość', 'przetłumaczyć'],
-                                   'context': {'lang': 'pl-pl', 'supported_langs': ['en', 'pl', 'uk', 'fi', 'nl']}})
+                                   'context': {'lang': 'pl-pl'}})
 
         utterances = message.data.get('utterance')
         context = message.data.get('context')
@@ -72,7 +81,7 @@ class LangTransformTests(unittest.TestCase):
 
     def test_non_existing_lang_handling_cz(self):
         message = Message('test', {'utterance': ['Это русский'],
-                                   'context': {'lang': 'ru-ru', 'supported_langs': ['en', 'pl', 'uk', 'fi', 'nl']}})
+                                   'context': {'lang': 'ru-ru'}})
 
         utterances = message.data.get('utterance')
         context = message.data.get('context')
