@@ -63,11 +63,11 @@ with open("./version.py", "r", encoding="utf-8") as v:
 PLUGIN_ENTRY_POINT = 'neon_utterance_translator_plugin=neon_utterance_translator_plugin:UtteranceTranslator'
 setup(
     name='neon_utterance_translator_plugin',
-    version='0.0.1',
+    version=version,
     description='A utterance parser/classifier/transformer plugin for ovos/neon/mycroft',
     url='https://github.com/NeonGeckoCom/neon_utterance_translator_plugin',
-    author='JarbasAi',
-    author_email='jarbasai@mailfence.com',
+    author='Neongecko',
+    author_email='developers@neon.ai',
     license='bsd3',
     packages=['neon_utterance_translator_plugin'],
     zip_safe=True,
