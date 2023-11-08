@@ -23,11 +23,11 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from typing import Optional, List
 from ovos_config import Configuration
 from ovos_plugin_manager.language import (OVOSLangDetectionFactory,
                                           OVOSLangTranslationFactory)
 from ovos_utils.log import LOG
-
 from neon_transformers import UtteranceTransformer
 from neon_transformers.tasks import UtteranceTask
 
@@ -35,7 +35,15 @@ from neon_transformers.tasks import UtteranceTask
 class UtteranceTranslator(UtteranceTransformer):
     task = UtteranceTask.TRANSLATION
 
-    def __init__(self, name="utterance_translator", config=None, priority=5):
+    def __init__(self, name: str = "utterance_translator",
+                 config: Optional[dict] = None, priority: int = 5):
+        """
+        Create an Utterance Transformer to handle translating inputs.
+        @param name: name of the transformer; used to determine default config
+        @param config: optional dict config for this plugin
+        @param priority: priority value for this plugin (1-100 with lower values
+            taking priority over higher values)
+        """
         super().__init__(name, priority, config)
         self.language_config = Configuration().get("language")
         self.supported_langs = self.language_config.get('supported_langs') or \
@@ -44,9 +52,17 @@ class UtteranceTranslator(UtteranceTransformer):
             self.supported_langs[0]
         self.lang_detector = OVOSLangDetectionFactory.create(
             self.language_config)
-        self.translator = OVOSLangTranslationFactory.create(self.language_config)
+        self.translator = OVOSLangTranslationFactory.create(
+            self.language_config)
 
-    def transform(self, utterances, context=None):
+    def transform(self, utterances: List[str], context: Optional[dict] = None) \
+            -> (List[str], dict):
+        """
+        Transform and get context for input utterances.
+        @param utterances: List of string utterances to evaluate
+        @param context: Optional dict context associated with utterances
+        @returns: list of transformed utterances, dict calculated context
+        """
         metadata = []
         was_translated = False
         for idx, ut in enumerate(utterances):

@@ -1,2 +1,3 @@
 pytest
 neon-lang-plugin-libretranslate
+ovos-bus-client
