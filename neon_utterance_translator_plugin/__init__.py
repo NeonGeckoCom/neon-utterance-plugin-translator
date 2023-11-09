@@ -35,7 +35,7 @@ from neon_transformers.tasks import UtteranceTask
 class UtteranceTranslator(UtteranceTransformer):
     task = UtteranceTask.TRANSLATION
 
-    def __init__(self, name: str = "utterance_translator",
+    def __init__(self, name: str = "neon_utterance_translator_plugin",
                  config: Optional[dict] = None, priority: int = 5):
         """
         Create an Utterance Transformer to handle translating inputs.
@@ -50,10 +50,15 @@ class UtteranceTranslator(UtteranceTransformer):
             ['en']
         self.internal_lang = self.language_config.get("internal") or \
             self.supported_langs[0]
-        self.lang_detector = OVOSLangDetectionFactory.create(
-            self.language_config)
+        LOG.debug("Initializing translator")
         self.translator = OVOSLangTranslationFactory.create(
             self.language_config)
+        if self.config.get("enable_detector", True):
+            self.lang_detector = OVOSLangDetectionFactory.create(
+                self.language_config)
+        else:
+            self.lang_detector = None
+            LOG.info("Detection module disabled in configuration")
 
     def transform(self, utterances: List[str], context: Optional[dict] = None) \
             -> (List[str], dict):
@@ -68,7 +73,12 @@ class UtteranceTranslator(UtteranceTransformer):
         for idx, ut in enumerate(utterances):
             try:
                 original = ut
-                detected_lang = self.lang_detector.detect(original)
+                if self.lang_detector:
+                    detected_lang = self.lang_detector.detect(original)
+                else:
+                    detected_lang = context.get('lang',
+                                                self.internal_lang).split('-',
+                                                                          1)[0]
                 if context and context.get('lang'):
                     lang = context.get('lang')
                     if detected_lang != lang.split('-', 1)[0]:
