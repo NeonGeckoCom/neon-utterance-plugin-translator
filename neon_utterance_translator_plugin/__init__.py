@@ -50,10 +50,17 @@ class UtteranceTranslator(UtteranceTransformer):
             ['en']
         self.internal_lang = self.language_config.get("internal") or \
             self.supported_langs[0]
-        self.lang_detector = OVOSLangDetectionFactory.create(
-            self.language_config)
+
         self.translator = OVOSLangTranslationFactory.create(
             self.language_config)
+        if self.language_config.get('detection_module', '') is not None:
+            # Explicitly `None` since default would be a string and unset config
+            # is handled as a string
+            self.lang_detector = OVOSLangDetectionFactory.create(
+                self.language_config)
+        else:
+            self.lang_detector = None
+            LOG.info("Detection module disabled in configuration")
 
     def transform(self, utterances: List[str], context: Optional[dict] = None) \
             -> (List[str], dict):
@@ -68,7 +75,12 @@ class UtteranceTranslator(UtteranceTransformer):
         for idx, ut in enumerate(utterances):
             try:
                 original = ut
-                detected_lang = self.lang_detector.detect(original)
+                if self.lang_detector:
+                    detected_lang = self.lang_detector.detect(original)
+                else:
+                    detected_lang = context.get('lang',
+                                                self.internal_lang).split('-',
+                                                                          1)[0]
                 if context and context.get('lang'):
                     lang = context.get('lang')
                     if detected_lang != lang.split('-', 1)[0]:
