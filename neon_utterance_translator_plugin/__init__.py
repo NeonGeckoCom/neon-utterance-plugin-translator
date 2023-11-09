@@ -35,7 +35,7 @@ from neon_transformers.tasks import UtteranceTask
 class UtteranceTranslator(UtteranceTransformer):
     task = UtteranceTask.TRANSLATION
 
-    def __init__(self, name: str = "utterance_translator",
+    def __init__(self, name: str = "neon_utterance_translator_plugin",
                  config: Optional[dict] = None, priority: int = 5):
         """
         Create an Utterance Transformer to handle translating inputs.
@@ -50,12 +50,10 @@ class UtteranceTranslator(UtteranceTransformer):
             ['en']
         self.internal_lang = self.language_config.get("internal") or \
             self.supported_langs[0]
-
+        LOG.debug("Initializing translator")
         self.translator = OVOSLangTranslationFactory.create(
             self.language_config)
-        if self.language_config.get('detection_module', '') is not None:
-            # Explicitly `None` since default would be a string and unset config
-            # is handled as a string
+        if self.config.get("enable_detector", True):
             self.lang_detector = OVOSLangDetectionFactory.create(
                 self.language_config)
         else:
