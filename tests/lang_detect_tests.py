@@ -23,10 +23,11 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import json
 import os
 import sys
 import unittest
+
+from unittest.mock import Mock
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from neon_utterance_translator_plugin import UtteranceTranslator
@@ -35,6 +36,15 @@ from neon_utterance_translator_plugin import UtteranceTranslator
 class LangDetectTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
+        mock_config = {
+            'language': {"internal_lang": "en-us",
+                         "supported_langs": ['en', 'pl', 'uk', 'fi', 'nl'],
+                         "detection_module": "libretranslate_detection_plug",
+                         "translation_module": "libretranslate_plug"}
+        }
+        import neon_utterance_translator_plugin
+        neon_utterance_translator_plugin.Configuration = \
+            Mock(return_value=mock_config)
         cls.detector = UtteranceTranslator()
 
     def test_detector_valid_en(self):

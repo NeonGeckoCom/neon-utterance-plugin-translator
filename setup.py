@@ -32,9 +32,11 @@ from setuptools import setup
 from os import path, getenv
 
 PLUGIN_ENTRY_POINT = 'utterance_translator_plug = neon_utterance_plugin_translator:UtteranceTranslator'
+BASE_PATH = path.abspath(path.dirname(__file__))
+
 
 def get_requirements(requirements_filename: str):
-    requirements_file = path.join(path.abspath(path.dirname(__file__)), "requirements", requirements_filename)
+    requirements_file = path.join(BASE_PATH, "requirements", requirements_filename)
     with open(requirements_file, 'r', encoding='utf-8') as r:
         requirements = r.readlines()
     requirements = [r.strip() for r in requirements if r.strip() and not r.strip().startswith("#")]
@@ -49,10 +51,11 @@ def get_requirements(requirements_filename: str):
                 requirements[i] = r.replace("github.com", f"{getenv('GITHUB_TOKEN')}@github.com")
     return requirements
 
-with open("README.md", "r") as f:
+
+with open(path.join(BASE_PATH, "README.md"), "r") as f:
     long_description = f.read()
 
-with open("./version.py", "r", encoding="utf-8") as v:
+with open(path.join(BASE_PATH, "version.py"), "r", encoding="utf-8") as v:
     for line in v.readlines():
         if line.startswith("__version__"):
             if '"' in line:
@@ -65,11 +68,14 @@ setup(
     name='neon_utterance_translator_plugin',
     version=version,
     description='A utterance parser/classifier/transformer plugin for ovos/neon/mycroft',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     url='https://github.com/NeonGeckoCom/neon_utterance_translator_plugin',
     author='Neongecko',
     author_email='developers@neon.ai',
     license='bsd3',
     packages=['neon_utterance_translator_plugin'],
+    install_requires=get_requirements("requirements.txt"),
     zip_safe=True,
     keywords='mycroft plugin utterance parser/classifier/transformer',
     entry_points={'neon.plugin.text': PLUGIN_ENTRY_POINT}

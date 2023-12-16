@@ -23,9 +23,11 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from ovos_plugin_manager.language import OVOSLangDetectionFactory, OVOSLangTranslationFactory
+from typing import Optional, List
+from ovos_config import Configuration
+from ovos_plugin_manager.language import (OVOSLangDetectionFactory,
+                                          OVOSLangTranslationFactory)
 from ovos_utils.log import LOG
-
 from neon_transformers import UtteranceTransformer
 from neon_transformers.tasks import UtteranceTask
 
@@ -33,33 +35,64 @@ from neon_transformers.tasks import UtteranceTask
 class UtteranceTranslator(UtteranceTransformer):
     task = UtteranceTask.TRANSLATION
 
-    def __init__(self, name="utterance_translator", config=None, priority=5):
+    def __init__(self, name: str = "neon_utterance_translator_plugin",
+                 config: Optional[dict] = None, priority: int = 5):
+        """
+        Create an Utterance Transformer to handle translating inputs.
+        @param name: name of the transformer; used to determine default config
+        @param config: optional dict config for this plugin
+        @param priority: priority value for this plugin (1-100 with lower values
+            taking priority over higher values)
+        """
         super().__init__(name, priority, config)
-        self.language_config = self.config.get("language") or {}
-        self.supported_langs = self.language_config.get('supported_langs') or ['en']
-        self.internal_lang = self.language_config.get("internal") or 'en-us' or self.supported_langs[0]
-        self.lang_detector = OVOSLangDetectionFactory.create()
-        self.translator = OVOSLangTranslationFactory.create()
+        self.language_config = Configuration().get("language")
+        self.supported_langs = self.language_config.get('supported_langs') or \
+            ['en']
+        self.internal_lang = self.language_config.get("internal") or \
+            self.supported_langs[0]
+        LOG.debug("Initializing translator")
+        self.translator = OVOSLangTranslationFactory.create(
+            self.language_config)
+        if self.config.get("enable_detector", True):
+            self.lang_detector = OVOSLangDetectionFactory.create(
+                self.language_config)
+        else:
+            self.lang_detector = None
+            LOG.info("Detection module disabled in configuration")
 
-    def transform(self, utterances, context=None):
+    def transform(self, utterances: List[str], context: Optional[dict] = None) \
+            -> (List[str], dict):
+        """
+        Transform and get context for input utterances.
+        @param utterances: List of string utterances to evaluate
+        @param context: Optional dict context associated with utterances
+        @returns: list of transformed utterances, dict calculated context
+        """
         metadata = []
         was_translated = False
         for idx, ut in enumerate(utterances):
             try:
                 original = ut
-                detected_lang = self.lang_detector.detect(original)
-                if context != None and context.get('lang') != '':
+                if self.lang_detector:
+                    detected_lang = self.lang_detector.detect(original)
+                else:
+                    detected_lang = context.get('lang',
+                                                self.internal_lang).split('-',
+                                                                          1)[0]
+                if context and context.get('lang'):
                     lang = context.get('lang')
                     if detected_lang != lang.split('-', 1)[0]:
-                        LOG.warning(f"Specified lang: {lang} but detected {detected_lang}")
+                        LOG.warning(f"Specified lang: {lang} but detected "
+                                    f"{detected_lang}")
                     else:
                         LOG.debug(f"Detected language: {detected_lang}")
                 else:
-                    LOG.warning(f"No lang provided but detected {detected_lang}")
+                    LOG.warning(f"No lang provided. Detected {detected_lang}")
                     lang = detected_lang
                 if lang.split('-', 1)[0] not in self.supported_langs:
-                    LOG.warning(f"There is no: {lang} in supported languages. "
-                                f"Utterance will be translated to {self.internal_lang}")
+                    LOG.warning(f"There is no: {lang} in supported languages "
+                                f"{self.supported_langs}. Utterance will be "
+                                f"translated to {self.internal_lang}")
                     utterances[idx] = self.translator.translate(
                         original,
                         self.internal_lang,
