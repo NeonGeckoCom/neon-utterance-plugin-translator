@@ -29,28 +29,38 @@ import unittest
 
 from unittest.mock import Mock
 from ovos_bus_client.message import Message
+from libretranslate_neon_plugin import LibreTranslatePlugin, LibreTranslateDetectPlugin
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from neon_utterance_translator_plugin import UtteranceTranslator
 
 
 class LangTransformTests(unittest.TestCase):
+    mock_config = {
+        'language': {"internal_lang": "en-us",
+                     "supported_langs": ['en', 'pl', 'uk', 'fi', 'nl'],
+                     "detection_module": "libretranslate_detection_plug",
+                     "translation_module": "libretranslate_plug"}
+    }
 
     @classmethod
     def setUpClass(cls) -> None:
-        mock_config = {
-            'language': {"internal_lang": "en-us",
-                         "supported_langs": ['en', 'pl', 'uk', 'fi', 'nl'],
-                         "detection_module": "libretranslate_detection_plug",
-                         "translation_module": "libretranslate_plug"}
-        }
         import neon_utterance_translator_plugin
         neon_utterance_translator_plugin.Configuration = \
-            Mock(return_value=mock_config)
-        cls.transformer = UtteranceTranslator()
+            Mock(return_value=cls.mock_config)
+        cls.transformer = UtteranceTranslator(config={"enable_detector": True})
 
-    def test_existing_lang_handling_en(self):
-        message = Message('test', {'utterance': ['message', 'to translate'],
+    def test_init(self):
+        self.assertEqual(self.transformer.language_config,
+                         self.mock_config['language'])
+        self.assertIsInstance(self.transformer.lang_detector,
+                              LibreTranslateDetectPlugin)
+        self.assertIsInstance(self.transformer.translator, LibreTranslatePlugin)
+
+    def test_supported_lang_handling(self):
+        # internal language (en)
+        message = Message('test', {'utterance': ['message',
+                                                 'to translate'],
                                    'context': {'lang': 'en-us'}})
 
         utterances = message.data.get('utterance')
@@ -67,14 +77,16 @@ class LangTransformTests(unittest.TestCase):
             self.assertEqual(res["was_translated"], False)
         self.assertEqual(utterances, result_list)
 
-    def test_existing_lang_handling_pl(self):
-        message = Message('test', {'utterance': ['wiadomość', 'przetłumaczyć'],
+        # supported language (pl)
+        message = Message('test', {'utterance': ['wiadomość',
+                                                 'przetłumaczyć'],
                                    'context': {'lang': 'pl-pl'}})
 
         utterances = message.data.get('utterance')
         context = message.data.get('context')
 
-        utterances, data = self.transformer.transform(utterances, context=context)
+        utterances, data = self.transformer.transform(utterances,
+                                                      context=context)
         result_list = []
 
         for res in data['translation_data']:
@@ -83,14 +95,16 @@ class LangTransformTests(unittest.TestCase):
             self.assertEqual(res["was_translated"], False)
         self.assertEqual(utterances, result_list)
 
-    def test_non_existing_lang_handling_cz(self):
+    def test_unsupported_lang_handling(self):
+        # ru-ru should be translated to en-us
         message = Message('test', {'utterance': ['Это русский'],
                                    'context': {'lang': 'ru-ru'}})
 
         utterances = message.data.get('utterance')
         context = message.data.get('context')
 
-        utterances, data = self.transformer.transform(utterances, context=context)
+        utterances, data = self.transformer.transform(utterances,
+                                                      context=context)
         expected_translation = ["It's Russian"]
         result_list = []
 
