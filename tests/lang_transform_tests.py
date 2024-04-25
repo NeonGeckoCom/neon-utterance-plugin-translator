@@ -48,7 +48,7 @@ class LangTransformTests(unittest.TestCase):
         import neon_utterance_translator_plugin
         neon_utterance_translator_plugin.Configuration = \
             Mock(return_value=cls.mock_config)
-        cls.transformer = UtteranceTranslator(config={"enable_detector": False})
+        cls.transformer = UtteranceTranslator(config={"enable_detector": True})
 
     def test_init(self):
         self.assertEqual(self.transformer.language_config,
