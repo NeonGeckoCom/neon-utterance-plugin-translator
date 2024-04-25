@@ -110,6 +110,6 @@ class UtteranceTranslator(UtteranceTransformer):
 
                 }]
             except Exception as e:
-                LOG.error(e)
+                LOG.exception(e)
         # return translated utterances + data
         return utterances, {"translation_data": metadata}
