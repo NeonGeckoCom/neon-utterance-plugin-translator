@@ -29,7 +29,7 @@ import unittest
 
 from unittest.mock import Mock
 from ovos_bus_client.message import Message
-from libretranslate_neon_plugin import LibreTranslatePlugin
+from libretranslate_neon_plugin import LibreTranslatePlugin, LibreTranslateDetectPlugin
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from neon_utterance_translator_plugin import UtteranceTranslator
@@ -53,7 +53,8 @@ class LangTransformTests(unittest.TestCase):
     def test_init(self):
         self.assertEqual(self.transformer.language_config,
                          self.mock_config['language'])
-        self.assertIsNone(self.transformer.lang_detector)
+        self.assertIsInstance(self.transformer.lang_detector,
+                              LibreTranslateDetectPlugin)
         self.assertIsInstance(self.transformer.translator, LibreTranslatePlugin)
 
     def test_supported_lang_handling(self):
