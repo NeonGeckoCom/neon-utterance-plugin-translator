@@ -1,4 +1,4 @@
-neon-transformers~=0.1,>=0.2.1a3
+neon-transformers~=1.0
 ovos-plugin_manager~=0.0,>=0.0.17
 ovos-utils~=0.0,>=0.0.22
 neon-utils~=1.0
