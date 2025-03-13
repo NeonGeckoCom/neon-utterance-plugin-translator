@@ -9,12 +9,12 @@ jobs:
   unit_tests:
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [ 3.9, '3.10', '3.11' ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
@@ -33,23 +33,23 @@ jobs:
         run: |
           pytest tests/lang_detect_tests.py --doctest-modules --junitxml=tests/lang-detect-test-results.xml
       - name: Upload language detector test results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
-          name: lang-detect-test-results
+          name: lang-detect-test-results-${{ matrix.python-version }}
           path: tests/lang-detect-test-results.xml
       - name: Test Language Translator
         run: |
           pytest tests/lang_translate_tests.py --doctest-modules --junitxml=tests/lang-translate-test-results.xml
       - name: Upload language translator test results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
-          name: lang-translate-test-results
+          name: lang-translate-test-results-${{ matrix.python-version }}
           path: tests/lang-translate-test-results.xml
       - name: Test Language Transform
         run: |
           pytest tests/lang_transform_tests.py --doctest-modules --junitxml=tests/lang-transform-test-results.xml
       - name: Upload language transformation test results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
-          name: lang-transform-test-results
+          name: lang-transform-test-results-${{ matrix.python-version }}
           path: tests/lang-transform-test-results.xml

@@ -1,20 +1,36 @@
 # Changelog
 
-## [0.1.2a2](https://github.com/NeonGeckoCom/neon-utterance-plugin-translator/tree/0.1.2a2) (2023-11-09)
+## [0.2.1a4](https://github.com/NeonGeckoCom/neon-utterance-plugin-translator/tree/0.2.1a4) (2025-03-13)
 
-[Full Changelog](https://github.com/NeonGeckoCom/neon-utterance-plugin-translator/compare/0.1.1...0.1.2a2)
-
-**Closed issues:**
-
-- Update translation logic to support a list of internal languages [\#9](https://github.com/NeonGeckoCom/neon-utterance-plugin-translator/issues/9)
-- Prepare for PyPI Release [\#2](https://github.com/NeonGeckoCom/neon-utterance-plugin-translator/issues/2)
-- Add Unit Tests [\#1](https://github.com/NeonGeckoCom/neon-utterance-plugin-translator/issues/1)
+[Full Changelog](https://github.com/NeonGeckoCom/neon-utterance-plugin-translator/compare/0.2.1a3...0.2.1a4)
 
 **Merged pull requests:**
 
-- Update GitHub Automation [\#13](https://github.com/NeonGeckoCom/neon-utterance-plugin-translator/pull/13) ([NeonDaniel](https://github.com/NeonDaniel))
-- Add support for configuration disabling language detection [\#12](https://github.com/NeonGeckoCom/neon-utterance-plugin-translator/pull/12) ([NeonDaniel](https://github.com/NeonDaniel))
-- Config handling bugfix and logging/formatting changes [\#10](https://github.com/NeonGeckoCom/neon-utterance-plugin-translator/pull/10) ([NeonDaniel](https://github.com/NeonDaniel))
+- Update to stable dependencies [\#19](https://github.com/NeonGeckoCom/neon-utterance-plugin-translator/pull/19) ([NeonDaniel](https://github.com/NeonDaniel))
+
+## [0.2.1a3](https://github.com/NeonGeckoCom/neon-utterance-plugin-translator/tree/0.2.1a3) (2025-03-13)
+
+[Full Changelog](https://github.com/NeonGeckoCom/neon-utterance-plugin-translator/compare/0.2.1a2...0.2.1a3)
+
+**Merged pull requests:**
+
+- Add gitignore and update license notices [\#18](https://github.com/NeonGeckoCom/neon-utterance-plugin-translator/pull/18) ([NeonDaniel](https://github.com/NeonDaniel))
+
+## [0.2.1a2](https://github.com/NeonGeckoCom/neon-utterance-plugin-translator/tree/0.2.1a2) (2024-09-12)
+
+[Full Changelog](https://github.com/NeonGeckoCom/neon-utterance-plugin-translator/compare/0.2.1a1...0.2.1a2)
+
+**Merged pull requests:**
+
+- Update dependency for compatibility [\#17](https://github.com/NeonGeckoCom/neon-utterance-plugin-translator/pull/17) ([NeonDaniel](https://github.com/NeonDaniel))
+
+## [0.2.1a1](https://github.com/NeonGeckoCom/neon-utterance-plugin-translator/tree/0.2.1a1) (2024-04-25)
+
+[Full Changelog](https://github.com/NeonGeckoCom/neon-utterance-plugin-translator/compare/0.2.0...0.2.1a1)
+
+**Merged pull requests:**
+
+- Update tests and dependencies [\#16](https://github.com/NeonGeckoCom/neon-utterance-plugin-translator/pull/16) ([NeonDaniel](https://github.com/NeonDaniel))
 
 
 
